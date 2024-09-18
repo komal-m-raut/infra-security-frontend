@@ -28,14 +28,7 @@ const Dashboard = () => {
     { id: 2, code: "COUPON2", discount: "20% off" },
   ]);
   const [openOrganization, setOpenOrganization] = useState(false);
-  const [organization, setOrganization] = useState<IOrganization | null>({
-    name: "My Organization",
-    users: ["user1@example.com", "user2@example.com"],
-    coupons: [
-      { id: 1, code: "COUPON1", discount: "10%" },
-      { id: 2, code: "COUPON2", discount: "20%" },
-    ],
-  });
+  const [organization, setOrganization] = useState<IOrganization | null>(null);
   const [open, setOpen] = useState(false);
   const [orgName, setOrgName] = useState("");
   const [emails, setEmails] = useState<string[]>([""]);
