@@ -16,26 +16,37 @@ import {
   IconButton,
   Grid2 as Grid,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import Navbar from "../components/Navbar";
+import OrganizationManagement from "../components/OrganizationManagement";
+import { IOrganization, ICoupon } from "../types/Organization.types";
 
 const Dashboard = () => {
-  const [coupons, setCoupons] = useState([
-    { id: 1, code: "COUPON1", description: "10% off" },
-    { id: 2, code: "COUPON2", description: "20% off" },
+  const [coupons, setCoupons] = useState<ICoupon[]>([
+    { id: 1, code: "COUPON1", discount: "10% off" },
+    { id: 2, code: "COUPON2", discount: "20% off" },
   ]);
-  const [organization, setOrganization] = useState(null);
+  const [openOrganization, setOpenOrganization] = useState(false);
+  const [organization, setOrganization] = useState<IOrganization | null>({
+    name: "My Organization",
+    users: ["user1@example.com", "user2@example.com"],
+    coupons: [
+      { id: 1, code: "COUPON1", discount: "10%" },
+      { id: 2, code: "COUPON2", discount: "20%" },
+    ],
+  });
   const [open, setOpen] = useState(false);
   const [orgName, setOrgName] = useState("");
-  const [emails, setEmails] = useState([""]);
-  const [errors, setErrors] = useState({ orgName: "", emails: [""] });
-  const navigate = useNavigate();
+  const [emails, setEmails] = useState<string[]>([""]);
+  const [errors, setErrors] = useState<{ orgName: string; emails: string[] }>({
+    orgName: "",
+    emails: [""],
+  });
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-
+  const handleOrganization = (state: boolean) => setOpenOrganization(state);
   const handleAddEmail = () => {
     setEmails([...emails, ""]);
     setErrors({ ...errors, emails: [...errors.emails, ""] });
@@ -103,110 +114,203 @@ const Dashboard = () => {
     // api.get("/organization").then((response) => setOrganization(response.data));
   }, []);
 
+  // Functions to manage organization
+  const addUserToOrg = (email: string) => {
+    setOrganization((prevOrg) =>
+      prevOrg
+        ? {
+            ...prevOrg,
+            users: [...prevOrg.users, email],
+          }
+        : null
+    );
+  };
+
+  const removeUserFromOrg = (email: string) => {
+    setOrganization((prevOrg) =>
+      prevOrg
+        ? {
+            ...prevOrg,
+            users: prevOrg.users.filter((user) => user !== email),
+          }
+        : null
+    );
+  };
+
+  const addCouponToOrg = (coupon: { code: string; discount: string }) => {
+    setOrganization((prevOrg) =>
+      prevOrg
+        ? {
+            ...prevOrg,
+            coupons: [
+              ...prevOrg.coupons,
+              { ...coupon, id: prevOrg.coupons.length + 1 },
+            ],
+          }
+        : null
+    );
+  };
+
+  const updateCouponInOrg = (coupon: {
+    id: number;
+    code: string;
+    discount: string;
+  }) => {
+    setOrganization((prevOrg) =>
+      prevOrg
+        ? {
+            ...prevOrg,
+            coupons: prevOrg.coupons.map((c) =>
+              c.id === coupon.id ? coupon : c
+            ),
+          }
+        : null
+    );
+  };
+
+  const removeCouponFromOrg = (id: number) => {
+    console.log(organization, id);
+    setOrganization((prevOrg) =>
+      prevOrg
+        ? {
+            ...prevOrg,
+            coupons: prevOrg.coupons.filter((coupon) => coupon.id !== id),
+          }
+        : null
+    );
+  };
+
   return (
     <>
       <Navbar />
       <Container sx={{ marginTop: 8 }}>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={organization ? () => navigate("/organization") : handleOpen}
-          style={{ marginBottom: "20px" }}
-        >
-          {organization ? "Manage Organization" : "Create Organization"}
-        </Button>
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Coupon Code</TableCell>
-                <TableCell>Description</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {coupons.map((coupon) => (
-                <TableRow key={coupon.id}>
-                  <TableCell>{coupon.code}</TableCell>
-                  <TableCell>{coupon.description}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        <Modal open={open} onClose={handleClose}>
-          <Box
-            sx={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              width: 400,
-              bgcolor: "background.paper",
-              border: "2px solid #000",
-              boxShadow: 24,
-              p: 4,
-            }}
-          >
-            <Typography variant="h6" component="h2" gutterBottom>
-              Create Organization
-            </Typography>
-            <TextField
-              label="Organization Name"
-              value={orgName}
-              onChange={(e) => setOrgName(e.target.value)}
-              fullWidth
-              margin="normal"
-              error={!!errors.orgName}
-              helperText={errors.orgName}
-            />
-            {emails.map((email, index) => (
-              <Grid container spacing={1} alignItems="center" key={index}>
-                <Grid size={{ xs: 10 }}>
-                  <TextField
-                    label={`Email ${index + 1}`}
-                    value={email}
-                    type="email"
-                    onChange={(e) => handleEmailChange(index, e.target.value)}
-                    fullWidth
-                    margin="normal"
-                    error={!!errors.emails[index]}
-                    helperText={errors.emails[index]}
-                  />
-                </Grid>
-                <Grid size={{ xs: 2 }}>
-                  <IconButton onClick={() => handleRemoveEmail(index)}>
-                    <RemoveIcon />
-                  </IconButton>
-                </Grid>
-              </Grid>
-            ))}
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                columnGap: "0.5rem",
-                justifyContent: "flex-end",
-                marginTop: "1rem",
-              }}
-            >
+        {openOrganization && organization ? (
+          <OrganizationManagement
+            organization={organization}
+            addUserToOrg={addUserToOrg}
+            removeUserFromOrg={removeUserFromOrg}
+            addCouponToOrg={addCouponToOrg}
+            updateCouponInOrg={updateCouponInOrg}
+            removeCouponFromOrg={removeCouponFromOrg}
+            handleOrganization={handleOrganization}
+          />
+        ) : (
+          <>
+            {organization ? (
               <Button
                 variant="contained"
                 color="primary"
-                onClick={handleAddEmail}
-                startIcon={<AddIcon />}
+                onClick={() => handleOrganization(true)}
+                style={{ marginBottom: "20px" }}
               >
-                Add Email
+                Manage Organization
               </Button>
+            ) : (
               <Button
                 variant="contained"
                 color="primary"
-                onClick={handleCreateOrganization}
+                onClick={handleOpen}
+                style={{ marginBottom: "20px" }}
               >
-                Create
+                Create Organization
               </Button>
-            </Box>
-          </Box>
-        </Modal>
+            )}
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Coupon Code</TableCell>
+                    <TableCell>Description</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {coupons.map((coupon) => (
+                    <TableRow key={coupon.id}>
+                      <TableCell>{coupon.code}</TableCell>
+                      <TableCell>{coupon.discount}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            <Modal open={open} onClose={handleClose}>
+              <Box
+                sx={{
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  width: 400,
+                  bgcolor: "background.paper",
+                  border: "2px solid #000",
+                  boxShadow: 24,
+                  p: 4,
+                }}
+              >
+                <Typography variant="h6" component="h2" gutterBottom>
+                  Create Organization
+                </Typography>
+                <TextField
+                  label="Organization Name"
+                  value={orgName}
+                  onChange={(e) => setOrgName(e.target.value)}
+                  fullWidth
+                  margin="normal"
+                  error={!!errors.orgName}
+                  helperText={errors.orgName}
+                />
+                {emails.map((email, index) => (
+                  <Grid container spacing={1} alignItems="center" key={index}>
+                    <Grid size={{ xs: 10 }}>
+                      <TextField
+                        label={`Email ${index + 1}`}
+                        value={email}
+                        type="email"
+                        onChange={(e) =>
+                          handleEmailChange(index, e.target.value)
+                        }
+                        fullWidth
+                        margin="normal"
+                        error={!!errors.emails[index]}
+                        helperText={errors.emails[index]}
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 2 }}>
+                      <IconButton onClick={() => handleRemoveEmail(index)}>
+                        <RemoveIcon />
+                      </IconButton>
+                    </Grid>
+                  </Grid>
+                ))}
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    columnGap: "0.5rem",
+                    justifyContent: "flex-end",
+                    marginTop: "1rem",
+                  }}
+                >
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleAddEmail}
+                    startIcon={<AddIcon />}
+                  >
+                    Add Email
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleCreateOrganization}
+                  >
+                    Create
+                  </Button>
+                </Box>
+              </Box>
+            </Modal>
+          </>
+        )}
       </Container>
     </>
   );
