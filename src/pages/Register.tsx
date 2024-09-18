@@ -6,6 +6,7 @@ import {
   Typography,
   IconButton,
   InputAdornment,
+  Link,
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import api from "../services/api";
@@ -54,9 +55,17 @@ const Register = () => {
           ),
         }}
       />
-      <Button variant="contained" color="primary" onClick={handleRegister}>
+      <Button
+        variant="contained"
+        color="primary"
+        fullWidth
+        onClick={handleRegister}
+      >
         Register
       </Button>
+      <Typography variant="body1" sx={{ marginTop: "1rem" }}>
+        Already have an account? Click <Link href="/login">here</Link> to Login
+      </Typography>
     </Container>
   );
 };

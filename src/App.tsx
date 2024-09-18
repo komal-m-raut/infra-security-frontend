@@ -9,9 +9,10 @@ import Home from "./pages/Home";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
-import Dashboard from "./pages/Dashboard"; // Assuming you have a Dashboard component
-import "./App.css";
+import Dashboard from "./pages/Dashboard";
+import Organization from "./pages/Organization";
 import useAuth from "./hooks/useAuth";
+import "./App.css";
 
 const theme = createTheme({
   palette: {
@@ -38,6 +39,10 @@ const App = () => {
           <Route
             path="/dashboard"
             element={isLoggedIn ? <Dashboard /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/organization"
+            element={isLoggedIn ? <Organization /> : <Navigate to="/login" />}
           />
           <Route path="*" element={<NotFound />} />
         </Routes>
