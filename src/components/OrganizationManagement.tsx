@@ -26,13 +26,13 @@ interface OrganizationManagementProps {
   organization: IOrganization;
   addUserToOrg: (email: string) => void;
   removeUserFromOrg: (email: string) => void;
-  addCouponToOrg: (coupon: { code: string; discount: string }) => void;
+  addCouponToOrg: (coupon: { name: string; discount: string }) => void;
   updateCouponInOrg: (coupon: {
-    id: number;
-    code: string;
+    _id: string;
+    name: string;
     discount: string;
   }) => void;
-  removeCouponFromOrg: (id: number) => void;
+  removeCouponFromOrg: (_id: string) => void;
   handleOrganization: (state: boolean) => void;
 }
 
@@ -51,7 +51,7 @@ const OrganizationManagement: React.FC<OrganizationManagementProps> = ({
   const [currentCoupon, setCurrentCoupon] = useState<ICoupon | null>(null);
   const [currentUser, setCurrentUser] = useState<string | null>(null);
   const [newUserEmail, setNewUserEmail] = useState("");
-  const [newCoupon, setNewCoupon] = useState({ code: "", discount: "" });
+  const [newCoupon, setNewCoupon] = useState({ name: "", discount: "" });
 
   const handleOpenUserModal = () => setOpenUserModal(true);
   const handleCloseUserModal = () => setOpenUserModal(false);
@@ -60,8 +60,8 @@ const OrganizationManagement: React.FC<OrganizationManagementProps> = ({
     setCurrentCoupon(coupon);
     setNewCoupon(
       coupon
-        ? { code: coupon.code, discount: coupon.discount }
-        : { code: "", discount: "" }
+        ? { name: coupon.name, discount: coupon.discount }
+        : { name: "", discount: "" }
     );
     setOpenCouponModal(true);
   };
@@ -97,17 +97,17 @@ const OrganizationManagement: React.FC<OrganizationManagementProps> = ({
 
   const handleAddCoupon = () => {
     if (currentCoupon) {
-      updateCouponInOrg({ ...newCoupon, id: currentCoupon.id });
+      updateCouponInOrg({ ...newCoupon, _id: currentCoupon._id });
     } else {
       addCouponToOrg(newCoupon);
     }
-    setNewCoupon({ code: "", discount: "" });
+    setNewCoupon({ name: "", discount: "" });
     handleCloseCouponModal();
   };
 
   const handleDeleteCoupon = () => {
     if (currentCoupon) {
-      removeCouponFromOrg(currentCoupon.id);
+      removeCouponFromOrg(currentCoupon._id);
       handleCloseDeleteModal();
     }
   };
@@ -147,12 +147,12 @@ const OrganizationManagement: React.FC<OrganizationManagementProps> = ({
             </TableRow>
           </TableHead>
           <TableBody>
-            {organization.users.map((user, index) => (
-              <TableRow key={index}>
-                <TableCell>{user}</TableCell>
+            {organization.users.map((user) => (
+              <TableRow key={user._id}>
+                <TableCell>{user.email}</TableCell>
                 <TableCell>
                   <IconButton
-                    onClick={() => handleOpenDeleteModal(user, "user")}
+                    onClick={() => handleOpenDeleteModal(user._id, "user")}
                   >
                     <DeleteIcon />
                   </IconButton>
@@ -185,7 +185,7 @@ const OrganizationManagement: React.FC<OrganizationManagementProps> = ({
           <TableBody>
             {organization.coupons.map((coupon) => (
               <TableRow key={coupon.id}>
-                <TableCell>{coupon.code}</TableCell>
+                <TableCell>{coupon.name}</TableCell>
                 <TableCell>{coupon.discount}</TableCell>
                 <TableCell>
                   <IconButton onClick={() => handleOpenCouponModal(coupon)}>
@@ -259,9 +259,9 @@ const OrganizationManagement: React.FC<OrganizationManagementProps> = ({
           </Typography>
           <TextField
             label="Coupon Code"
-            value={newCoupon.code}
+            value={newCoupon.name}
             onChange={(e) =>
-              setNewCoupon({ ...newCoupon, code: e.target.value })
+              setNewCoupon({ ...newCoupon, name: e.target.value })
             }
             fullWidth
             margin="normal"

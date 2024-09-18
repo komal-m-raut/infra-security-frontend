@@ -1,11 +1,14 @@
 export interface IOrganization {
   name: string;
-  users: string[];
+  users: {
+    email: string;
+    _id: string;
+  }[];
   coupons: Coupon[];
 }
 
 export interface ICoupon {
-  id: number;
-  code: string;
+  _id: string;
+  name: string;
   discount: string;
 }

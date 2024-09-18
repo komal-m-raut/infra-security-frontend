@@ -21,12 +21,10 @@ import RemoveIcon from "@mui/icons-material/Remove";
 import Navbar from "../components/Navbar";
 import OrganizationManagement from "../components/OrganizationManagement";
 import { IOrganization, ICoupon } from "../types/Organization.types";
+import api from "../services/api";
 
 const Dashboard = () => {
-  const [coupons, setCoupons] = useState<ICoupon[]>([
-    { id: 1, code: "COUPON1", discount: "10% off" },
-    { id: 2, code: "COUPON2", discount: "20% off" },
-  ]);
+  const [coupons, setCoupons] = useState<ICoupon[]>([]);
   const [openOrganization, setOpenOrganization] = useState(false);
   const [organization, setOrganization] = useState<IOrganization | null>(null);
   const [open, setOpen] = useState(false);
@@ -93,85 +91,96 @@ const Dashboard = () => {
 
   const handleCreateOrganization = () => {
     if (validateForm()) {
-      // Add logic to create organization
-      console.log("Organization Name:", orgName);
-      console.log("Emails:", emails);
-      handleClose();
+      api
+        .post("/organization", { name: orgName, emails })
+        .then((response) => {
+          setOrganization(response.data);
+          handleClose();
+        })
+        .catch((error) => {
+          console.error("Organization creation failed", error);
+        });
     }
   };
 
-  useEffect(() => {
-    // Add logic to fetch user coupons
-    // api.get("/coupons").then((response) => setCoupons(response.data));
-    // Add logic to fetch user organization details
-    // api.get("/organization").then((response) => setOrganization(response.data));
-  }, []);
-
-  // Functions to manage organization
   const addUserToOrg = (email: string) => {
-    setOrganization((prevOrg) =>
-      prevOrg
-        ? {
-            ...prevOrg,
-            users: [...prevOrg.users, email],
-          }
-        : null
-    );
+    api
+      .post("/organization/add-user", { email })
+      .then((response) => {
+        setOrganization(response.data);
+      })
+      .catch((error) => {
+        console.error("Add user to organization failed", error);
+      });
   };
 
-  const removeUserFromOrg = (email: string) => {
-    setOrganization((prevOrg) =>
-      prevOrg
-        ? {
-            ...prevOrg,
-            users: prevOrg.users.filter((user) => user !== email),
-          }
-        : null
-    );
+  const removeUserFromOrg = (userId: string) => {
+    api
+      .post("/organization/remove-user", { userId })
+      .then((response) => {
+        setOrganization(response.data);
+      })
+      .catch((error) => {
+        console.error("Add user to organization failed", error);
+      });
   };
 
-  const addCouponToOrg = (coupon: { code: string; discount: string }) => {
-    setOrganization((prevOrg) =>
-      prevOrg
-        ? {
-            ...prevOrg,
-            coupons: [
-              ...prevOrg.coupons,
-              { ...coupon, id: prevOrg.coupons.length + 1 },
-            ],
-          }
-        : null
-    );
+  const addCouponToOrg = (coupon: { name: string; discount: string }) => {
+    api
+      .post("/organization/add-coupon", {
+        name: coupon.name,
+        discount: coupon.discount,
+      })
+      .then((response) => {
+        setOrganization(response.data);
+      })
+      .catch((error) => {
+        console.error("Add user to organization failed", error);
+      });
   };
 
   const updateCouponInOrg = (coupon: {
-    id: number;
-    code: string;
+    _id: string;
+    name: string;
     discount: string;
   }) => {
-    setOrganization((prevOrg) =>
-      prevOrg
-        ? {
-            ...prevOrg,
-            coupons: prevOrg.coupons.map((c) =>
-              c.id === coupon.id ? coupon : c
-            ),
-          }
-        : null
-    );
+    api
+      .patch(`/coupon/${coupon._id}`, {
+        name: coupon.name,
+        discount: coupon.discount,
+      })
+      .then((response) => {
+        setOrganization((prevOrg) =>
+          prevOrg
+            ? {
+                ...prevOrg,
+                coupons: prevOrg.coupons.map((c) =>
+                  c.id === response.data.id ? response.data : c
+                ),
+              }
+            : prevOrg
+        );
+      })
+      .catch((error) => {
+        console.error("Add user to organization failed", error);
+      });
   };
 
-  const removeCouponFromOrg = (id: number) => {
-    console.log(organization, id);
-    setOrganization((prevOrg) =>
-      prevOrg
-        ? {
-            ...prevOrg,
-            coupons: prevOrg.coupons.filter((coupon) => coupon.id !== id),
-          }
-        : null
-    );
+  const removeCouponFromOrg = (_id: string) => {
+    api
+      .post("/organization/remove-coupon", { couponId: _id })
+      .then((response) => {
+        setOrganization(response.data);
+      })
+      .catch((error) => {
+        console.error("Add user to organization failed", error);
+      });
   };
+
+  useEffect(() => {
+    api.get("/coupon").then((response) => setCoupons(response.data));
+    api.get("/organization").then((response) => setOrganization(response.data));
+  }, []);
 
   return (
     <>
@@ -218,8 +227,8 @@ const Dashboard = () => {
                 </TableHead>
                 <TableBody>
                   {coupons.map((coupon) => (
-                    <TableRow key={coupon.id}>
-                      <TableCell>{coupon.code}</TableCell>
+                    <TableRow key={coupon._id}>
+                      <TableCell>{coupon.name}</TableCell>
                       <TableCell>{coupon.discount}</TableCell>
                     </TableRow>
                   ))}

@@ -10,6 +10,7 @@ import {
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import useAuth from "../hooks/useAuth";
+import api from "../services/api";
 // import api from "../services/api";
 
 const Login = () => {
@@ -20,9 +21,10 @@ const Login = () => {
 
   const handleLogin = async () => {
     try {
-      // const response = await api.post("/login", { email, password });
-      // login(response.data.token, () => navigate("/dashboard"));
-      login("Temporary token", () => window.location.replace("/dashboard"));
+      const response = await api.post("/auth/login", { email, password });
+      login(response.data.access_token, () =>
+        window.location.replace("/dashboard")
+      );
     } catch (error) {
       console.error("Login failed", error);
     }

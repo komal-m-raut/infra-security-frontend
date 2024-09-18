@@ -18,7 +18,7 @@ const Register = () => {
 
   const handleRegister = async () => {
     try {
-      await api.post("/register", { email, password });
+      await api.post("/auth/signup", { email, password });
       window.location.replace("/login");
     } catch (error) {
       console.error("Registration failed", error);
